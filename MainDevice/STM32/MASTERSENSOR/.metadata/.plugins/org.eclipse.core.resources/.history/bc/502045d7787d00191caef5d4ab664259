@@ -1,0 +1,146 @@
+/*
+ * can_module.c
+ *
+ *  Created on: 23/05/2019
+ *      Author: Vargas
+ */
+
+#include "can_module.h"
+
+CAN_HandleTypeDef * thCAN = NULL;
+
+void CAN_Error_Handler(void)
+{
+  /* USER CODE BEGIN Error_Handler_Debug */
+  /* User can add his own implementation to report the HAL error return state */
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+	while(1)
+	{
+		HAL_Delay(500);
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
+	}
+  /* USER CODE END Error_Handler_Debug */
+}
+
+void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+}
+
+void HAL_CAN_RxFifo0FullCallback(CAN_HandleTypeDef *hcan)
+{
+	CAN_RxHeaderTypeDef rxHeader;
+	uint8_t rxData[8];
+	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, rxData);
+	US_CAN_Process_Message(&rxHeader, rxData);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+}
+
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
+{
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+}
+
+void HAL_CAN_RxFifo1FullCallback(CAN_HandleTypeDef *hcan)
+{
+	CAN_RxHeaderTypeDef rxHeader;
+	uint8_t rxData[8];
+	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &rxHeader, rxData);
+	US_CAN_Process_Message(&rxHeader, rxData);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+}
+
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+}
+
+void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+}
+
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef *hcan)
+{
+	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+}
+
+void US_CAN_Check_CAN_TypeDef(void)
+{
+	if (thCAN == NULL)
+	{
+		CAN_Error_Handler();
+	}
+}
+
+void US_CAN_Set_Filter(void)
+{
+	US_CAN_Check_CAN_TypeDef();
+	CAN_FilterTypeDef sFilterConfig;
+	sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+	sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
+	sFilterConfig.FilterIdHigh = 0x0000;
+	sFilterConfig.FilterIdLow = 0x0469;
+	sFilterConfig.FilterMaskIdHigh = 0x0000;
+	sFilterConfig.FilterMaskIdLow = 0x0000;
+	sFilterConfig.FilterFIFOAssignment = 0;
+	sFilterConfig.FilterActivation = ENABLE;
+	sFilterConfig.FilterBank = 0;
+	if(HAL_CAN_ConfigFilter(thCAN, &sFilterConfig) != HAL_OK)
+	{
+		CAN_Error_Handler();
+	}
+}
+
+void US_CAN_Init(CAN_HandleTypeDef *hcan)
+{
+	thCAN = hcan;
+	US_CAN_GPIO_Init();
+	US_CAN_Set_Filter();
+}
+
+void US_CAN_GPIO_Init(void)
+{
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	/* Configure CAN Tx and Rx Pins: PD0 -> Rx PD1 -> Tx */
+	GPIO_InitStruct.Pin = GPIO_PIN_1;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	// GPIO_InitStruct.Alternate = CANx_TX_AF;
+	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+	GPIO_InitStruct.Pin = GPIO_PIN_0;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	// GPIO_InitStruct.Alternate = CANx_RX_AF;
+	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+	/* Finish configuration CAN Tx and Rx Pins: PD0 -> Rx PD1 -> Tx */
+}
+
+void US_CAN_Process_Message(CAN_RxHeaderTypeDef * rxHeader, uint8_t rxData[])
+{
+	Ext_CAN_Process_Message(rxHeader, rxData);
+}
+
+__weak void Ext_CAN_Process_Message(CAN_RxHeaderTypeDef * rxHeader, uint8_t rxData[])
+{
+	UNUSED(rxHeader);
+	UNUSED(rxData);
+}
+
+void US_CAN_Transmit(uint8_t tx_data[], uint32_t canID, uint32_t len)
+{
+	US_CAN_Check_CAN_TypeDef();
+	uint32_t txMailBox = 0;
+	CAN_TxHeaderTypeDef txHeader;
+	txHeader.DLC = len;
+	txHeader.StdId = canID;
+	txHeader.IDE = CAN_ID_STD;
+	HAL_CAN_AddTxMessage(thCAN, &txHeader, tx_data, &txMailBox);
+	uint8_t usb_rx[8] = {0};
+}
+

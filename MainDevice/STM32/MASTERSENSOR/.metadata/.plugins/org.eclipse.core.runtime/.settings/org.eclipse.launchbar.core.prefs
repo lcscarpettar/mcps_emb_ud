@@ -1,0 +1,9 @@
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/arch=x86
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=win32
+configDescList=org.eclipse.launchbar.core.descriptorType.default\:MasterCANTest Debug,org.eclipse.launchbar.core.descriptorType.default\:MasterCANTest.elf
+eclipse.preferences.version=1
+org.eclipse.launchbar.core.descriptorType.default\:MasterCANTest\ Debug/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:MasterCANTest\ Debug/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
+org.eclipse.launchbar.core.descriptorType.default\:MasterCANTest.elf/activeLaunchMode=debug
+org.eclipse.launchbar.core.descriptorType.default\:MasterCANTest.elf/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
+org.eclipse.launchbar.core.descriptorType.default\:New_configuration/activeLaunchMode=run

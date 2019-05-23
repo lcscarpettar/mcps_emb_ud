@@ -1,0 +1,25 @@
+/*
+ * can_module.h
+ *
+ *  Created on: 23/05/2019
+ *      Author: Vargas
+ */
+
+#ifndef CAN_MODULE_H_
+#define CAN_MODULE_H_
+
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_can.h"
+#include <string.h>
+
+static CAN_HandleTypeDef * thCAN = NULL;
+
+void CAN_Error_Handler(void);
+void US_CAN_Check_CAN_TypeDef(void);
+void US_CAN_Transmit(CAN_HandleTypeDef *hcan, uint8_t tx_data[], uint32_t len);
+void US_CAN_Init(void);
+void US_CAN_Set_Filter(void);
+void US_CAN_GPIO_Init(void);
+
+
+#endif /* CAN_MODULE_H_ */
