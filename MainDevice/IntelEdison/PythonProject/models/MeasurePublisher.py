@@ -1,6 +1,7 @@
 import requests
 import json
 import sqlite3
+from .SensorIDTimeStamp import SensorIDTimeStamp
 
 
 class MeasurePublisher:
@@ -27,6 +28,7 @@ class MeasurePublisher:
             cursor = self.conn.cursor()
             sql_insert = "insert into measures (id ,measure, timestamp) values ({0}, {1}, {2})".format(sensor_id, value, timestamp)
             cursor.execute(sql_insert)
+            self.conn.commit()
         except Exception as ex:
             print(ex)
 
@@ -58,17 +60,20 @@ CREATE TABLE IF NOT EXISTS measures(
         if len(self.data) == 0:
             return
         try:
-            response = requests.post(self.server_url, json=json.dumps({'Mediciones' : self.data}))
+            response = requests.post(self.server_url, json={'Mediciones' : self.data})
             if response.status_code == 200:
                 self.data = []
                 try:
                     cursor = self.conn.cursor()
                     cursor.execute("delete from measures")
+                    self.conn.commit()
                     print("Publicado con exito")
                 except Exception as ex:
                     print(ex)
+            return response
         except Exception as ex:
             print(ex)
+            return None
 
     
             

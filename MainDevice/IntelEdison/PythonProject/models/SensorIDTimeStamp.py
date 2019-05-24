@@ -8,13 +8,13 @@ import threading
 
 class SensorIDTimeStamp(threading.Thread):    
     def __init__(self):
-        super().__init__()
+        super(SensorIDTimeStamp, self).__init__()
         self.server_id_url = "https://mcpsapi.azurewebsites.net/mcpsapi/Parametro"
         self.obj_temp_name = "obj_temp_" + str(getnode())
         self.amb_temp_name = "amb_temp_" + str(getnode())
         self.obj_temp_id = -1
         self.amb_temp_id = -1
-        self.server_timestamp = datetime.now().timestamp()
+        self.server_timestamp = time.time()
         self.last_time = time.time()
         self._getServerID()
         self.bRunning = True
@@ -24,7 +24,7 @@ class SensorIDTimeStamp(threading.Thread):
         diff_time = time.time() - self.last_time
         return self.server_timestamp + diff_time
 
-    def stop(self):
+    def close(self):
         self.bRunning = False
 
     def _getServerID(self):
