@@ -20,7 +20,7 @@ class SensorIDTimeStamp(threading.Thread):
         self.bRunning = True
         self.start()
 
-    def getServerTimeStamp(self):
+    def calculateServerTimeStamp(self):
         diff_time = time.time() - self.last_time
         return self.server_timestamp + diff_time
 
@@ -51,6 +51,8 @@ class SensorIDTimeStamp(threading.Thread):
         while self.bRunning:
             self._getServerTimeStamp(self.obj_temp_name)
             for i in range(60):
+                if self.obj_temp_id < 0:
+                    self._getServerID()
                 time.sleep(10)
                 if not self.bRunning:
                     break
