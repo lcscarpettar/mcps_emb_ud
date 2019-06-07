@@ -1,7 +1,7 @@
 import requests
 import json
 import sqlite3
-from .SensorIDTimeStamp import SensorIDTimeStamp
+from SensorIDTimeStamp import SensorIDTimeStamp
 
 
 class MeasurePublisher:
